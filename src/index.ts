@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import database from '@/lib/database.js';
 
 import { Env } from './config/env.js';
+import { limit } from './controllers/app.controller.js';
 
 import globalError from './middlewares/global-error.js';
 import authorization from './middlewares/authorization.js';
@@ -15,7 +16,6 @@ import userRoutes from './routes/user.route.js';
 import credentialRoutes from './routes/credential.route.js';
 
 import type { CorsOptions } from 'cors';
-import type { Request, Response } from 'express';
 
 const app = express();
 
@@ -26,13 +26,7 @@ const limiter = rateLimit({
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  handler: (_req: Request, res: Response) => {
-    res.status(429).json({
-      success: false,
-      title: 'Too Many Requests',
-      message: 'Too many requests from this IP, please try again after 15 minutes!',
-    });
-  },
+  handler: limit,
 });
 
 const corsOptions: CorsOptions = {
