@@ -8,10 +8,18 @@ import { UserModel } from '@/models/User.js';
 import { DataEncryptionKey } from '@/utils/crypto.js';
 
 import { CredentialModel } from '@/models/Credential.js';
-import { decryptedValues, encryptedValues } from './credential.service.js';
+import { SecretCodeModel } from '@/models/SecretCode.js';
+
+import * as Credential from '@/utils/credential-values.js';
+import * as SecretCode from '@/utils/secretcode-values.js';
 
 import type { SignOptions } from 'jsonwebtoken';
-import type { CredentialDocument, SetPasswordPayload, UserDocument } from '@/@types/globals.js';
+import type {
+  CredentialDocument,
+  SecretCodeDocument,
+  SetPasswordPayload,
+  UserDocument,
+} from '@/@types/globals.js';
 
 type UserAuthPayload = Omit<UserDocument, '_id' | 'metadata'>;
 
@@ -117,6 +125,8 @@ export const set = async (payload: SetPasswordPayload) => {
 
   const oldCredentials = await CredentialModel.find<CredentialDocument>({ user: userId });
 
+  const oldSecretCodes = await SecretCodeModel.find<SecretCodeDocument>({ user: userId });
+
   const buffer = DataEncryptionKey.create();
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -124,10 +134,28 @@ export const set = async (payload: SetPasswordPayload) => {
 
   const newDek = buffer.toString('hex');
 
-  const bulkOps = oldCredentials.map((credential) => {
-    const oldDecrypted = decryptedValues(dek, credential);
+  const bulkSecretCodes = oldSecretCodes.map((code) => {
+    const oldDecrypted = SecretCode.decrypted(dek, code);
 
-    const newEncrypted = encryptedValues(newDek, oldDecrypted);
+    const newEncrypted = SecretCode.encrypted(newDek, oldDecrypted);
+
+    return {
+      updateOne: {
+        filter: { _id: newEncrypted._id },
+        update: {
+          $set: {
+            name: newEncrypted.name,
+            code: newEncrypted.code,
+          },
+        },
+      },
+    };
+  });
+
+  const bulkCredentials = oldCredentials.map((credential) => {
+    const oldDecrypted = Credential.decrypted(dek, credential);
+
+    const newEncrypted = Credential.encrypted(newDek, oldDecrypted);
 
     return {
       updateOne: {
@@ -163,8 +191,12 @@ export const set = async (payload: SetPasswordPayload) => {
       },
     );
 
-    if (bulkOps.length > 0) {
-      await CredentialModel.bulkWrite(bulkOps);
+    if (bulkCredentials.length > 0) {
+      await CredentialModel.bulkWrite(bulkCredentials);
+    }
+
+    if (bulkSecretCodes.length > 0) {
+      await SecretCodeModel.bulkWrite(bulkSecretCodes);
     }
 
     await session.commitTransaction();
@@ -183,7 +215,7 @@ export const set = async (payload: SetPasswordPayload) => {
   }
 };
 
-export const eliminate = async (payload: UserAuthPayload & { userId: string }) => {
+export const drop = async (payload: UserAuthPayload & { userId: string }) => {
   const { userId, username, password } = payload;
 
   const user = await UserModel.findOne({ _id: userId, username });

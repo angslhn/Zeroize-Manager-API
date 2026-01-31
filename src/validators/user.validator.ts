@@ -51,7 +51,7 @@ export function deleteAccount(data: Validation) {
   }
 }
 
-export function changePassword(data: Validation) {
+export function setPassword(data: Validation) {
   if (typeof data.oldPassword !== 'string' || data.oldPassword.length < 8) {
     throw new ResponseError(
       400,

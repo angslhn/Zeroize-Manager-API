@@ -1,40 +1,11 @@
 import { UserModel } from '@/models/User.js';
 import { CredentialModel } from '@/models/Credential.js';
-import { CredentialValue } from '@/utils/crypto.js';
+
+import * as Credential from '@/utils/credential-values.js';
 
 import ResponseError from '@/helpers/response-error.js';
 
 import type { AuthPayload, CredentialDocument, CredentialPayload } from '@/@types/globals.js';
-
-export const encryptedValues = (
-  dek: string,
-  credential: CredentialDocument,
-): CredentialDocument => {
-  const decoded = Buffer.from(dek, 'hex');
-
-  return {
-    ...(credential._id && { _id: credential._id }),
-    ...(credential.user && { user: credential.user }),
-    service: CredentialValue.encrypt(credential.service, decoded),
-    account: CredentialValue.encrypt(credential.account, decoded),
-    password: CredentialValue.encrypt(credential.password, decoded),
-  };
-};
-
-export const decryptedValues = (
-  dek: string,
-  credential: CredentialDocument,
-): CredentialDocument => {
-  const decoded = Buffer.from(dek, 'hex');
-
-  return {
-    ...(credential._id && { _id: credential._id }),
-    ...(credential.user && { user: credential.user }),
-    service: CredentialValue.decrypt(credential.service, decoded),
-    account: CredentialValue.decrypt(credential.account, decoded),
-    password: CredentialValue.decrypt(credential.password, decoded),
-  };
-};
 
 export const find = async (payload: AuthPayload) => {
   const { userId, dek } = payload;
@@ -53,7 +24,7 @@ export const find = async (payload: AuthPayload) => {
     user: userId,
   });
 
-  const decrypted = encrypted.map((credential) => decryptedValues(dek, credential));
+  const decrypted = encrypted.map((credential) => Credential.decrypted(dek, credential));
 
   return decrypted;
 };
@@ -72,7 +43,7 @@ export const add = async (payload: CredentialPayload): Promise<CredentialDocumen
   }
 
   const newDocument = await CredentialModel.create({
-    ...encryptedValues(dek, credential),
+    ...Credential.encrypted(dek, credential),
     user: userId,
   });
 
@@ -97,7 +68,7 @@ export const findAndEdit = async (payload: CredentialPayload) => {
       _id: credential._id,
       user: userId,
     },
-    { ...encryptedValues(dek, credential) },
+    { ...Credential.encrypted(dek, credential) },
     {
       runValidators: true,
       new: true,
@@ -115,7 +86,7 @@ export const findAndEdit = async (payload: CredentialPayload) => {
   return credential;
 };
 
-export const findAndDelete = async (payload: Pick<CredentialPayload, 'userId' | '_id'>) => {
+export const findAndRemove = async (payload: Pick<CredentialPayload, 'userId' | '_id'>) => {
   const { userId, _id } = payload;
 
   const user = await UserModel.findById(userId).lean();
@@ -128,18 +99,18 @@ export const findAndDelete = async (payload: Pick<CredentialPayload, 'userId' | 
     );
   }
 
-  const deletedDocument = await CredentialModel.findOneAndDelete({
+  const removedDocument = await CredentialModel.findOneAndDelete({
     _id,
     user: userId,
   });
 
-  if (!deletedDocument) {
+  if (!removedDocument) {
     throw new ResponseError(
       404,
       'Credential Not Found',
-      'The credential you are attempting to delete could not be found. It may have already been deleted, or you do not have permission to access this resource.',
+      'The credential you are attempting to remove could not be found. It may have already been removed, or you do not have permission to access this resource.',
     );
   }
 
-  return deletedDocument._id;
+  return removedDocument._id;
 };

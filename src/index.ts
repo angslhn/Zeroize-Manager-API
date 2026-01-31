@@ -4,16 +4,18 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import database from '@/lib/database.js';
 
-import { Env } from './config/env.js';
-import { limit } from './controllers/app.controller.js';
+import { Env } from '@/config/env.js';
+import { limit } from '@/controllers/app.controller.js';
 
-import globalError from './middlewares/global-error.js';
-import authorization from './middlewares/authorization.js';
-import unknownRoute from './middlewares/unknown-route.js';
+import dek from '@/middlewares/data-encryption-key.js';
+import authorization from '@/middlewares/authorization.js';
+import globalError from '@/middlewares/global-error.js';
+import unknownRoute from '@/middlewares/unknown-route.js';
 
-import appRoutes from './routes/app.route.js';
-import userRoutes from './routes/user.route.js';
-import credentialRoutes from './routes/credential.route.js';
+import appRoutes from '@/routes/app.route.js';
+import userRoutes from '@/routes/user.route.js';
+import secretCodeRoutes from '@/routes/secretcode.route.js';
+import credentialRoutes from '@/routes/credential.route.js';
 
 import type { CorsOptions } from 'cors';
 
@@ -45,7 +47,8 @@ database();
 
 app.use(appRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/credentials', authorization, credentialRoutes);
+app.use('/api/secretcodes', authorization, dek, secretCodeRoutes);
+app.use('/api/credentials', authorization, dek, credentialRoutes);
 app.use(unknownRoute);
 app.use(globalError);
 

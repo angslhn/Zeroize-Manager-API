@@ -51,7 +51,7 @@ export const DataEncryptionKey = {
   },
 };
 
-export const CredentialValue = {
+export const Cipher = {
   encrypt(text: string, dataEncryptionKey: Buffer): string {
     const iv = crypto.randomBytes(12);
 

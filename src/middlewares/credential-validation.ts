@@ -1,5 +1,5 @@
 import ResponseError from '@/helpers/response-error.js';
-import { checkValidation } from '@/validators/credential.validation.js';
+import { checkValidation } from '@/validators/credential.validator.js';
 
 import type { Request, Response, NextFunction } from 'express';
 import type { CredentialDocument } from '@/@types/globals.js';

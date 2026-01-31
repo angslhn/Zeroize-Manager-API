@@ -41,6 +41,16 @@ export type UserDocument = {
   _id?: Types.ObjectId | string;
 } & User;
 
+export type SecretCode = {
+  user?: Types.ObjectId | string;
+  name: string;
+  code: string;
+};
+
+export type SecretCodeDocument = {
+  _id?: Types.ObjectId | string;
+} & SecretCode;
+
 export type Credential = {
   user?: Types.ObjectId | string;
   service: string;
@@ -55,6 +65,8 @@ export type CredentialDocument = {
 export type TokenPayload = { id: string; username: string };
 
 export type AuthPayload = { userId: string; dek: string };
+
+export type SecretCodePayload = AuthPayload & SecretCodeDocument;
 
 export type CredentialPayload = AuthPayload & CredentialDocument;
 

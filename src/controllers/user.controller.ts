@@ -11,10 +11,9 @@ export const register = async (req: Request, res: Response) => {
 
   await database();
 
-  const result = await UserService.create(payload);
+  await UserService.create(payload);
 
   res.status(201).json({
-    ...result,
     title: 'Registration successful',
     message: 'Account creation registration successful, please login to continue.',
   });
@@ -28,17 +27,17 @@ export const login = async (req: Request, res: Response) => {
 
   await database();
 
-  const result = await UserService.find(payload);
+  const authorization = await UserService.find(payload);
 
   res.status(200).json({
-    ...result,
     title: 'Login successful',
     message:
       'Successfully logged into your account, now you can manage all your credentials on the dashboard.',
+    authorization,
   });
 };
 
-export const changePassword = async (req: Request, res: Response) => {
+export const setPassword = async (req: Request, res: Response) => {
   const dek = req.headers['x-vault-key'];
 
   const payload = {
@@ -54,10 +53,10 @@ export const changePassword = async (req: Request, res: Response) => {
   const newDek = await UserService.set(payload);
 
   res.status(200).json({
-    dek: newDek,
     title: 'Password Change Successful',
     message:
       "Your old password has been successfully updated to a new one, and its encryption security has changed. Make sure you save your new password so you don't forget it.",
+    authorization: { dek: newDek },
   });
 };
 
@@ -66,7 +65,7 @@ export const deleteAccount = async (req: Request, res: Response) => {
 
   await database();
 
-  await UserService.eliminate(payload);
+  await UserService.drop(payload);
 
   res.status(200).json({
     title: 'Account Delete Successful',

@@ -10,10 +10,10 @@ export default function validation(checkValidation: CheckValidation) {
     const { username, password, oldPassword, newPassword }: Validation = req.body;
 
     const isAuthentication = username && password && !oldPassword && !newPassword;
-    const isChangePassword = !username && !password && oldPassword && newPassword;
+    const isSetPassword = !username && !password && oldPassword && newPassword;
     const isDeleteAccount = !username && password && !oldPassword && !newPassword;
 
-    const isDataFound = isAuthentication || isChangePassword || isDeleteAccount;
+    const isDataFound = isAuthentication || isSetPassword || isDeleteAccount;
 
     if (!isDataFound) {
       throw new ResponseError(
@@ -25,7 +25,7 @@ export default function validation(checkValidation: CheckValidation) {
 
     if (
       (isAuthentication && (typeof username !== 'string' || typeof password !== 'string')) ||
-      (isChangePassword && (typeof oldPassword !== 'string' || typeof newPassword !== 'string')) ||
+      (isSetPassword && (typeof oldPassword !== 'string' || typeof newPassword !== 'string')) ||
       (isDeleteAccount && typeof password !== 'string')
     ) {
       throw new ResponseError(

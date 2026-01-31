@@ -1,6 +1,6 @@
-import * as CredentialService from '@/services/credential.service.js';
-
 import database from '@/lib/database.js';
+
+import * as CredentialService from '@/services/credential.service.js';
 
 import type { Request, Response } from 'express';
 import type { AuthPayload, CredentialPayload } from '@/@types/globals.js';
@@ -12,10 +12,10 @@ export const findCredentials = async (req: Request, res: Response) => {
 
   await database();
 
-  const data = await CredentialService.find(payload);
+  const result = await CredentialService.find(payload);
 
   res.status(200).json({
-    data,
+    data: { credentials: result },
   });
 };
 
@@ -33,10 +33,10 @@ export const addCredential = async (req: Request, res: Response) => {
 
   await database();
 
-  const data = await CredentialService.add(payload);
+  const result = await CredentialService.add(payload);
 
   res.status(201).json({
-    data,
+    data: { credential: result },
     title: 'Credential Successfully Added!',
   });
 };
@@ -57,15 +57,15 @@ export const editCredential = async (req: Request, res: Response) => {
 
   await database();
 
-  const data = await CredentialService.findAndEdit(payload);
+  const result = await CredentialService.findAndEdit(payload);
 
   res.status(200).json({
-    data,
+    data: { credential: result },
     title: 'Credentials Changed Successfully!',
   });
 };
 
-export const deleteCredential = async (req: Request, res: Response) => {
+export const removeCredential = async (req: Request, res: Response) => {
   const payload: Pick<CredentialPayload, 'userId' | '_id'> = {
     userId: req.user?.id,
     ...req.body,
@@ -73,10 +73,10 @@ export const deleteCredential = async (req: Request, res: Response) => {
 
   await database();
 
-  const _id = await CredentialService.findAndDelete(payload);
+  const _id = await CredentialService.findAndRemove(payload);
 
   res.status(200).json({
     _id,
-    title: 'Credential Successfully Deleted!',
+    title: 'Credential Successfully Removed!',
   });
 };
