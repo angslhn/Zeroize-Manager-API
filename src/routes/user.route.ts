@@ -13,6 +13,6 @@ const userRoutes = Router();
 userRoutes.post('/login', validation(User.login), login);
 userRoutes.post('/register', validation(User.register), register);
 userRoutes.patch('/set-password', authorization, dek, validation(User.setPassword), setPassword);
-userRoutes.delete('/delete', authorization, validation(User.deleteAccount), deleteAccount);
+userRoutes.delete('/delete-account', authorization, validation(User.deleteAccount), deleteAccount);
 
 export default userRoutes;
