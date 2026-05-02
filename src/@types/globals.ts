@@ -5,7 +5,7 @@ import type { StringValue } from 'ms';
 export type EnvOption = {
   PORT: number;
   NODE_ENV: string;
-  ORIGIN: string;
+  CLIENT_ORIGIN: string;
   JWT_SECRET: string;
   JWT_EXPIRES_IN: StringValue;
   MONGODB_URI: string;
