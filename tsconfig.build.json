@@ -3,7 +3,8 @@
   "compilerOptions": {
     "sourceMap": false,
     "declaration": false,
-    "removeComments": true
+    "removeComments": true,
+    "outDir": "dist"
   },
   "exclude": [
     "**/*.test.ts",

@@ -16,11 +16,7 @@
       "@/*": ["src/*"]
     },
     "resolveJsonModule": true,
-
-    /* --- Emit --- */
-    "outDir": "dist",
-    "sourceMap": true,
-    "removeComments": true,
+    "ignoreDeprecations": "6.0",
 
     /* --- Strict Type Checking --- */
     "strict": true,
